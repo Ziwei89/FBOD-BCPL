@@ -69,27 +69,12 @@ def min_max_ref_point_index(bbox, output_feature, model_input_size):
 
     return (min_wight_index, min_height_index, max_wight_index, max_height_index)
 
-def getSPL_SampleWeight_hard(sample_score, threshold_lamda):
+
+def getCPL_SampleWeight(sample_score, threshold_lamda, MF_para):
     if sample_score >= threshold_lamda:
-        return 1
+        return sample_score**MF_para
     else:
         return 0
-
-def getSPL_SampleWeight_soft(sample_score, m_root, threshold_lamda):
-    if sample_score >= threshold_lamda:
-        return sample_score ** (1/m_root)
-    else:
-        return 0
-
-def Piecewise_SampleWeight(sample_score):
-    if sample_score >=0 and sample_score <= 0.25:
-        return 0.125
-    elif sample_score > 0.25 and sample_score <= 0.5:
-        return 0.375
-    elif sample_score > 0.5 and sample_score <= 0.75:
-        return 0.625
-    else:
-        return 0.875
 
 class getTargets(nn.Module):
     def __init__(self, model_input_size, num_classes=2, scale=80., m_root=3, stride=2, cuda=True):
@@ -104,7 +89,7 @@ class getTargets(nn.Module):
         self.cuda = cuda
 
     # def forward(self, batch_size, bboxes_bs):
-    def forward(self, input, bboxes_bs, difficult_mode, spl_threshold=None):
+    def forward(self, input, bboxes_bs, difficult_mode, cpl_threshold=None, MF_para=1.0/3):
         # input is a [CONF, LOC] list with 'bs,c,h,w' format tensor.
         # bboxes is a bs list with 'n,c' tensor, n is the num of box.
         # difficult_mode # 0 means no difficult difference, 1 means soft label weight.
@@ -151,7 +136,7 @@ class getTargets(nn.Module):
         for b in range(bs):
             bboxes = bboxes_bs[b]
             predict_bboxes = predict_bboxes_bs[b]
-            label_list = self.__get_targets_with_dynamicLableAssign(predict_bbox=predict_bboxes,bboxes=bboxes, difficult_mode=difficult_mode, spl_threshold=spl_threshold) ### label_list[0], label_list[1] '1,h,w,c'
+            label_list = self.__get_targets_with_dynamicLableAssign(predict_bbox=predict_bboxes,bboxes=bboxes, difficult_mode=difficult_mode, cpl_threshold=cpl_threshold, MF_para=MF_para) ### label_list[0], label_list[1] '1,h,w,c'
             targets_cls.append(label_list[0])
             targets_loc.append(label_list[1])
         targets_cls = torch.cat(targets_cls, 0) ### 'bs,h,w,c' format tensor
@@ -160,7 +145,7 @@ class getTargets(nn.Module):
         targets.append(targets_loc)
         return targets
       
-    def __get_targets_with_dynamicLableAssign(self, predict_bbox, bboxes, difficult_mode, spl_threshold=None): ###
+    def __get_targets_with_dynamicLableAssign(self, predict_bbox, bboxes, difficult_mode, cpl_threshold=None, MF_para=1.0/3): ###
 
         FloatTensor = torch.cuda.FloatTensor if self.cuda else torch.FloatTensor
 
@@ -233,14 +218,13 @@ class getTargets(nn.Module):
 
             if difficult_mode == 0: # no difficulty different
                 sample_weight = 1
-            elif difficult_mode == 1: # soft_weight, linear
-                sample_weight = bbox[5]
-            elif difficult_mode == 2: # soft_weight, piecewise
-                sample_weight = Piecewise_SampleWeight(bbox[5])
-            elif difficult_mode == 3: # spl-bc soft mode
-                sample_weight = getSPL_SampleWeight_soft(bbox[5], self.m_root, spl_threshold)
-            elif difficult_mode == 4: # spl-bc hard mode
-                sample_weight = getSPL_SampleWeight_hard(bbox[5], spl_threshold)
+            elif difficult_mode == 1: # Easy sample only
+                if bbox[5] >= 0.625:
+                    sample_weight = 1
+                else:
+                    sample_weight = 0
+            elif difficult_mode == 2: # CPL-BC mode
+                sample_weight = getCPL_SampleWeight(bbox[5], threshold_lamda=cpl_threshold, MF_para=MF_para)
             else:
                 raise("Error! difficult_mode error.")
                 

@@ -1,5 +1,5 @@
 #!/bin/bash
-############### train CPL algorithm.##################
+#################################
 p_data_root_path="/home/newdisk/ziwei/FBD-SV-2024/"
 p_total_Epoch=50
 p_Add_name="20241107"
@@ -14,7 +14,7 @@ python3 train_AP50.py \
         --data_augmentation \
         --data_subset="subsetAllA" \
         --modelAorB="modelA" \
-        --learn_mode="Normal" \
+        --learn_mode="Easy_sample" \
         --Add_name=$p_Add_name \
         --Batch_size=$p_Batch_size \
         --start_Epoch=0 \
@@ -28,7 +28,7 @@ python3 train_AP50.py \
         --data_augmentation \
         --data_subset="subsetAllB" \
         --modelAorB="modelB" \
-        --learn_mode="Normal" \
+        --learn_mode="Easy_sample" \
         --Add_name=$p_Add_name \
         --Batch_size=$p_Batch_size \
         --start_Epoch=0 \

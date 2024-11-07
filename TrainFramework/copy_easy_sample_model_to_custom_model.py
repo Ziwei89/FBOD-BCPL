@@ -19,12 +19,12 @@ if __name__ == "__main__":
     else:
         Add_name = opt.Add_name
     
-    normal_model_A_dir = "logs/" + num_to_english_c_dic[opt.input_img_num] + "/" + opt.model_input_size + "/" + opt.input_mode + "_" + opt.aggregation_method \
-                             + "_" + opt.backbone_name + "_" + opt.fusion_method + "_Normal_" + abbr_assign_method \
+    Easy_sample_model_A_dir = "logs/" + num_to_english_c_dic[opt.input_img_num] + "/" + opt.model_input_size + "/" + opt.input_mode + "_" + opt.aggregation_method \
+                             + "_" + opt.backbone_name + "_" + opt.fusion_method + "_Easy_sample_" + abbr_assign_method \
                              + "_modelA/"
     
-    normal_model_B_dir = "logs/" + num_to_english_c_dic[opt.input_img_num] + "/" + opt.model_input_size + "/" + opt.input_mode + "_" + opt.aggregation_method \
-                             + "_" + opt.backbone_name + "_" + opt.fusion_method + "_Normal_" + abbr_assign_method \
+    Easy_sample_model_B_dir = "logs/" + num_to_english_c_dic[opt.input_img_num] + "/" + opt.model_input_size + "/" + opt.input_mode + "_" + opt.aggregation_method \
+                             + "_" + opt.backbone_name + "_" + opt.fusion_method + "_Easy_sample_" + abbr_assign_method \
                              + "_modelB/"
 
     custom_model_A_dir = "logs/" + num_to_english_c_dic[opt.input_img_num] + "/" + opt.model_input_size + "/" + opt.input_mode + "_" + opt.aggregation_method \
@@ -39,5 +39,5 @@ if __name__ == "__main__":
     os.makedirs(custom_model_B_dir, exist_ok=True)
     model_name = "FB_object_detect_model.pth"
 
-    shutil.copy(normal_model_A_dir + model_name, custom_model_A_dir + model_name)
-    shutil.copy(normal_model_B_dir + model_name, custom_model_B_dir + model_name)
+    shutil.copy(Easy_sample_model_A_dir + model_name, custom_model_A_dir + model_name)
+    shutil.copy(Easy_sample_model_B_dir + model_name, custom_model_B_dir + model_name)

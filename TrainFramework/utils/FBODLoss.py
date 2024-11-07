@@ -64,34 +64,29 @@ def box_ciou(b1, b2):
     return ciou
 
 class LossFunc(nn.Module): #
-    def __init__(self,num_classes, model_input_size=(672,384), scale=80., stride=2, learn_mode="SPL", soft_label_func="linear", spl_mode="hard", cuda=True, gettargets=False):
+    def __init__(self,num_classes, model_input_size=(672,384), scale=80., stride=2, learn_mode="CPLBC", MF_para=1.0/3, cuda=True, gettargets=False):
         super(LossFunc, self).__init__()
         self.num_classes = num_classes
         self.model_input_size = model_input_size
         self.scale = scale
         self.learn_mode = learn_mode
-        self.soft_label_func = soft_label_func
+        self.MF_para = MF_para #### Minimizer Function parameter
         #(model_input_size, num_classes=2, stride=2)
         self.get_targets = getTargets(model_input_size, num_classes, scale=scale, stride=stride, cuda=True)
-        self.spl_mode = spl_mode
         self.cuda = cuda
         self.gettargets = gettargets
     
-    def forward(self, input, targets, spl_threshold=None):
+    def forward(self, input, targets, cpl_threshold=None):
 
         FloatTensor = torch.cuda.FloatTensor if self.cuda else torch.FloatTensor
         # targets is bboxes, bbox[0] cx, bbox[1] cy, bbox[2] w, bbox[3] h, bbox[4] class_id, bbox[5] score
         if self.gettargets:
             if self.learn_mode == "Normal":
                 targets = self.get_targets(input, targets, difficult_mode=0) ### targets is a list wiht 2 members, each is a 'bs,in_h,in_w,c' format tensor(cls and bbox).
-            elif self.learn_mode == "SLW" and self.soft_label_func == "linear":
+            elif self.learn_mode == "Easy_sample":
                 targets = self.get_targets(input, targets, difficult_mode=1) ### targets is a list wiht 2 members, each is a 'bs,in_h,in_w,c' format tensor(cls and bbox).
-            elif self.learn_mode == "SLW" and self.soft_label_func == "piecewise":
-                targets = self.get_targets(input, targets, difficult_mode=2) ### targets is a list wiht 2 members, each is a 'bs,in_h,in_w,c' format tensor(cls and bbox).
-            elif self.learn_mode == "SPLBC" and self.spl_mode == "soft":
-                targets = self.get_targets(input, targets, difficult_mode=3, spl_threshold=spl_threshold)
-            elif self.learn_mode == "SPLBC" and self.spl_mode == "hard":
-                targets = self.get_targets(input, targets, difficult_mode=4, spl_threshold=spl_threshold)
+            elif self.learn_mode == "CPLBC":
+                targets = self.get_targets(input, targets, difficult_mode=2, cpl_threshold=cpl_threshold, MF_para=self.MF_para)
             else:
                 raise("Error! learn_mode error.")
 
@@ -169,14 +164,14 @@ class LossFunc(nn.Module): #
         bs_obj_nums = torch.sum(weight_pos, dim=(1,2))
         
         #################LOC
-        label_LOC_difficult_lamda = targets[1].type(FloatTensor) #bs*in_h,in_w*c  c=6(cx,xy,o_w,o_h,difficult,lamda)
-        label_LOC_difficult_lamda = label_LOC_difficult_lamda.view(bs,in_h,in_w,-1) # bs,in_h,in_w,c(c=6)
+        label_LOC_sampleweight_lamda = targets[1].type(FloatTensor) #bs*in_h,in_w*c  c=6(cx,xy,o_w,o_h,difficult,lamda)
+        label_LOC_sampleweight_lamda = label_LOC_sampleweight_lamda.view(bs,in_h,in_w,-1) # bs,in_h,in_w,c(c=6)
         ### bs, in_h, in_w, c(c=4 cx,xy,o_w,o_h)
-        label_LOC = label_LOC_difficult_lamda[:,:,:,:4] # bs,in_h,in_w,c(c=4)
+        label_LOC = label_LOC_sampleweight_lamda[:,:,:,:4] # bs,in_h,in_w,c(c=4)
         ### bs, in_h, in_w
-        label_difficult = label_LOC_difficult_lamda[:,:,:,4] # bs,in_h,in_w
+        label_sampleweight = label_LOC_sampleweight_lamda[:,:,:,4] # bs,in_h,in_w
         ### bs, in_h, in_w
-        # label_lamda = label_LOC_difficult_lamda[:,:,:,5] # bs,in_h,in_w
+        # label_lamda = label_LOC_sampleweight_lamda[:,:,:,5] # bs,in_h,in_w
 
         ## Conf Loss
         ## bs, in_h, in_w
@@ -184,7 +179,7 @@ class LossFunc(nn.Module): #
         # print(predict_CONF[predict_CONF>0.2])
         MSE_Loss = MSELoss(label_CONF, predict_CONF)
         neg_MSE_Loss = MSE_Loss * weight_neg
-        pos_MSE_Loss = (MSE_Loss * label_difficult) * weight_pos
+        pos_MSE_Loss = (MSE_Loss * label_sampleweight) * weight_pos
 
         CONF_loss = 0
         for b in range(bs):
@@ -207,7 +202,7 @@ class LossFunc(nn.Module): #
         ### Locate Loss
         ciou_loss = 1-box_ciou(predict_LOC, label_LOC)
         ###(bs, in_h, in_w)
-        ciou_loss = (ciou_loss.view(bs,in_h,in_w)) * label_difficult * weight_pos
+        ciou_loss = (ciou_loss.view(bs,in_h,in_w)) * label_sampleweight * weight_pos
         LOC_loss = 0
         for b in range(bs):
             LOC_loss_per_batch = 0
@@ -438,14 +433,14 @@ class LossFunc_ThreeBranch(nn.Module): #
         bs_obj_nums = torch.sum(weight_pos, dim=(1,2))
         
         #################LOC
-        label_LOC_difficult_lamda = targets[1].type(FloatTensor) #bs*in_h,in_w*c  c=6(cx,xy,o_w,o_h,difficult,lamda)
-        label_LOC_difficult_lamda = label_LOC_difficult_lamda.view(bs,in_h,in_w,-1) # bs,in_h,in_w,c(c=6)
+        label_LOC_sampleweight_lamda = targets[1].type(FloatTensor) #bs*in_h,in_w*c  c=6(cx,xy,o_w,o_h,difficult,lamda)
+        label_LOC_sampleweight_lamda = label_LOC_sampleweight_lamda.view(bs,in_h,in_w,-1) # bs,in_h,in_w,c(c=6)
         ### bs, in_h, in_w, c(c=4 cx,xy,o_w,o_h)
-        label_LOC = label_LOC_difficult_lamda[:,:,:,:4] # bs,in_h,in_w,c(c=4)
+        label_LOC = label_LOC_sampleweight_lamda[:,:,:,:4] # bs,in_h,in_w,c(c=4)
         ### bs, in_h, in_w
-        label_difficult = label_LOC_difficult_lamda[:,:,:,4] # bs,in_h,in_w
+        label_sampleweight = label_LOC_sampleweight_lamda[:,:,:,4] # bs,in_h,in_w
         ### bs, in_h, in_w
-        # label_lamda = label_LOC_difficult_lamda[:,:,:,5] # bs,in_h,in_w
+        # label_lamda = label_LOC_sampleweight_lamda[:,:,:,5] # bs,in_h,in_w
 
         ## Conf Loss
         ## bs, in_h, in_w
@@ -453,7 +448,7 @@ class LossFunc_ThreeBranch(nn.Module): #
         # print(predict_CONF[predict_CONF>0.2])
         MSE_Loss = MSELoss(label_CONF, predict_CONF)
         neg_MSE_Loss = MSE_Loss * weight_neg
-        pos_MSE_Loss = (MSE_Loss * label_difficult) * weight_pos
+        pos_MSE_Loss = (MSE_Loss * label_sampleweight) * weight_pos
 
         CONF_loss = 0
         for b in range(bs):
@@ -476,7 +471,7 @@ class LossFunc_ThreeBranch(nn.Module): #
         ### Locate Loss
         ciou_loss = 1-box_ciou(predict_LOC, label_LOC)
         ###(bs, in_h, in_w)
-        ciou_loss = (ciou_loss.view(bs,in_h,in_w)) * label_difficult * weight_pos
+        ciou_loss = (ciou_loss.view(bs,in_h,in_w)) * label_sampleweight * weight_pos
         LOC_loss = 0
         for b in range(bs):
             LOC_loss_per_batch = 0

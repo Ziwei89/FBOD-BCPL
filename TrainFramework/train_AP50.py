@@ -23,23 +23,14 @@ import copy
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
-def adjust_spl_threshold(step_proportion=0.01):
+def adjust_cpl_threshold(step_proportion=0.01, e1=0.1, e2=0.9, constant=0.8, TS_para=1):
     """
-    spl_threshold
-        |
-        |_0.8
-        | :\ 
-        | :  \
-        | :    \
-        | :      \
-        | :        \
-        |_:__________\_______ Step_proportion
-         0.1         0.9
+    cpl_threshold
     """
-    if step_proportion <= 0.1:
-        return 0.8
-    elif step_proportion <= 0.9:
-        return 0.9-step_proportion
+    if step_proportion <= e1:
+        return constant
+    elif step_proportion <= e2:
+        return constant*((0.9-step_proportion)/(e2-e1))**TS_para
     else:
         return 0.
 
@@ -77,7 +68,7 @@ class LablesToResults(object):
         return label_obj_list
 
 def fit_one_epoch(largest_AP_50,net,loss_func_train,loss_func_val,epoch,epoch_size,epoch_size_val,gen,genval,
-                  Epoch,cuda,save_model_dir,labels_to_results,detect_post_process,spl_threshold):
+                  Epoch,cuda,save_model_dir,labels_to_results,detect_post_process,cpl_threshold):
     total_loss = 0
     val_loss = 0
     start_time = time.time()
@@ -102,7 +93,7 @@ def fit_one_epoch(largest_AP_50,net,loss_func_train,loss_func_val,epoch,epoch_si
                     targets = [Variable(torch.from_numpy(fature_label).type(torch.FloatTensor)) for fature_label in targets] ##
             optimizer.zero_grad()
             outputs = net(images)
-            loss = loss_func_train(outputs, targets, spl_threshold)
+            loss = loss_func_train(outputs, targets, cpl_threshold)
             loss.backward()
             optimizer.step()
 
@@ -141,7 +132,7 @@ def fit_one_epoch(largest_AP_50,net,loss_func_train,loss_func_val,epoch,epoch_si
                     targets_val = [Variable(torch.from_numpy(fature_label).type(torch.FloatTensor)) for fature_label in targets_val] ##
                 optimizer.zero_grad()
                 outputs = net(images_val)
-                loss = loss_func_val(outputs, targets_val, spl_threshold)
+                loss = loss_func_val(outputs, targets_val, cpl_threshold)
                 # print(loss.item())
                 val_loss += loss
 
@@ -227,14 +218,9 @@ if __name__ == "__main__":
     else:
         raise("Error! assign_method error.")
     
-    if opt.learn_mode == "SLW" and opt.soft_label_func == "not_applicable":
-        raise("Error! when opt.learn_mode = 'SLW', the opt.soft_label_func cannot equal to 'not_applicable'.")
-    
     base_Add_name = opt.Add_name
-    if opt.learn_mode == "SLW":
-        Add_name = opt.soft_label_func + "_" + opt.Add_name
-    elif opt.learn_mode == "SPLBC":
-        Add_name = opt.spl_mode + "_" + opt.Add_name
+    if opt.learn_mode == "CPLBC":
+        Add_name = opt.MF_para + "_"  + opt.TS_para + "_" + opt.Add_name
     else:
         Add_name = opt.Add_name
     
@@ -247,14 +233,39 @@ if __name__ == "__main__":
     os.makedirs(save_model_dir, exist_ok=True)
 
     ############### For log figure ################
-    log_pic_name_loss = "train_output_img/" + num_to_english_c_dic[opt.input_img_num] + "/" +opt.model_input_size + "/" + opt.input_mode + "_" + opt.aggregation_method \
-                                            + "_" + opt.backbone_name + "_" + opt.fusion_method + "_" + opt.learn_mode \
-                                            + "_" + abbr_assign_method + "_" + Add_name + "_"  + modelAorB + "_loss.jpg"
-    log_pic_name_ap50 = "train_output_img/" + num_to_english_c_dic[opt.input_img_num] + "/" +opt.model_input_size + "/" + opt.input_mode + "_" + opt.aggregation_method \
-                                            + "_" + opt.backbone_name + "_" + opt.fusion_method + "_" + opt.learn_mode \
-                                            + "_" + abbr_assign_method + "_" + Add_name + "_"  + modelAorB + "_ap50.jpg"
-    os.makedirs("train_output_img/" + num_to_english_c_dic[opt.input_img_num] + "/" + opt.model_input_size + "/", exist_ok=True)
+    log_pic_name_loss = save_model_dir + "loss.jpg"
+    log_pic_name_ap50 = save_model_dir + "ap50.jpg"
     ################################################
+
+    if opt.MF_para == "1-3":
+        MF_para = 1.0/3
+    else:
+        MF_para = float(opt.MF_para)
+    
+    if opt.TS_para == "1-3":
+        TS_para = 1.0/3
+    else:
+        TS_para = float(opt.TS_para)
+
+    config_txt = save_model_dir + "config.txt"
+    if os.path.exists(config_txt):
+        pass
+    else:
+        config_txt_file = open(config_txt, 'w')
+        config_txt_file.write("Input mode: " + opt.input_mode + "\n")
+        config_txt_file.write("Aggregation method: " + opt.aggregation_method + "\n")
+        config_txt_file.write("Backbone name: " + opt.backbone_name + "\n")
+        config_txt_file.write("Fusion method: " + opt.fusion_method + "\n")
+        config_txt_file.write("Assign method: " + opt.assign_method + "\n")
+        config_txt_file.write("Scale factor: " + str(opt.scale_factor) + "\n")
+        config_txt_file.write("Batch size: " + str(opt.Batch_size) + "\n")
+        config_txt_file.write("Data augmentation: " + str(opt.data_augmentation) + "\n")
+        config_txt_file.write("Load pretrain model: " + str(opt.load_pretrain_model) + "\n")
+        config_txt_file.write("Learn rate: " + str(opt.lr) + "\n")
+        config_txt_file.write("Learn mode: " + opt.learn_mode + "\n")
+        config_txt_file.write("The parameter of the Minimize Function: " + str(MF_para) + "\n")
+        config_txt_file.write("The parameter of the Training Scheduling: " + str(TS_para) + "\n")
+        config_txt_file.close()
 
     #-------------------------------#
     #-------------------------------#
@@ -268,14 +279,6 @@ if __name__ == "__main__":
     else:
         raise ValueError(f"Error! No train_annotation_path: {train_annotation_path}")
 
-    # if opt.learn_mode == "SLW":
-    #     train_annotation_path = "./variable_score/img_label_" + num_to_english_c_dic[opt.input_img_num] + "_continuous_difficulty_train_" + base_Add_name + "_" + data_subset + ".txt"
-    #     if os.path.exists(train_annotation_path):
-    #         pass
-    #     else:
-    #         raise("Error! No train_annotation_path.")
-    # else:
-    #     train_annotation_path = "./dataloader/img_label_" + num_to_english_c_dic[opt.input_img_num] + "_continuous_difficulty_train.txt"
 
     train_dataset_image_path = opt.data_root_path + "images/train/"
     
@@ -327,7 +330,7 @@ if __name__ == "__main__":
     # 建立loss函数
     # dynamic label assign, so the gettargets is ture.
     loss_func_train = LossFunc(num_classes=num_classes, model_input_size=(model_input_size[1], model_input_size[0]), \
-                         learn_mode=opt.learn_mode, soft_label_func=opt.soft_label_func, spl_mode=opt.spl_mode, cuda=Cuda, gettargets=True)
+                         learn_mode=opt.learn_mode, MF_para=MF_para, cuda=Cuda, gettargets=True)
     
     loss_func_val = LossFunc(num_classes=num_classes, model_input_size=(model_input_size[1], model_input_size[0]), \
                          learn_mode="Normal", cuda=Cuda, gettargets=True)
@@ -381,12 +384,12 @@ if __name__ == "__main__":
     ap_50_str=opt.input_train_val_loss_ap50_str.split("/")[2]
     largest_AP_50=float(opt.input_train_val_loss_ap50_str.split("/")[3])
     for epoch in range(start_Epoch,end_Epoch):
-        if opt.learn_mode == "SPLBC":
-            spl_threshold = adjust_spl_threshold((epoch*1.)/total_Epoch)
+        if opt.learn_mode == "CPLBC":
+            cpl_threshold = adjust_cpl_threshold((epoch*1.)/total_Epoch, TS_para=TS_para)
         else:
-            spl_threshold=None
+            cpl_threshold=None
         train_loss, val_loss,largest_AP_50_record, AP_50 = fit_one_epoch(largest_AP_50,net,loss_func_train,loss_func_val,epoch,epoch_size,epoch_size_val,train_dataloader,val_dataloader,
-                                                                            total_Epoch,Cuda,save_model_dir, labels_to_results=labels_to_results, detect_post_process=detect_post_process, spl_threshold=spl_threshold)
+                                                                            total_Epoch,Cuda,save_model_dir, labels_to_results=labels_to_results, detect_post_process=detect_post_process, cpl_threshold=cpl_threshold)
         largest_AP_50 = largest_AP_50_record
         if (epoch+1)>=2:
             if train_loss_str == "None":

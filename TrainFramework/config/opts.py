@@ -79,20 +79,10 @@ class opts(object):
                             help='cross_vx: The Cross Validation data set')
         
         self.parser.add_argument('--learn_mode', default="SPLBC", type=str,
-                            help='learn_mode: "Normal", "SLW", and "SPLBC". \
+                            help='learn_mode: "Normal", "Easy_sample", and "CPLBC". \
                                  "Normal": means to train the model with all sample, \
-                                 "SLW": means to train the model with soft label weight, \
-                                 "SPLBC": means the spl based on confierence.')
-        
-        self.parser.add_argument('--soft_label_func', default="not_applicable", type=str,
-                            help='soft_label_func: "not_applicable", "linear", and "piecewise". \
-                                 "linear": x=y; \
-                                 "piecewise": omit.')
-        
-        self.parser.add_argument('--spl_mode', default="soft", type=str,
-                            help='spl_mode: "hard", "soft". \
-                                 "hard": hard regularizer, \
-                                 "soft": soft regularizer.')
+                                 "Easy_sample": means using the easy samples to the model, \
+                                 "CPLBC": means the co-paced learning based on confierence.')
         
         self.parser.add_argument('--MF_para', default="1-3", type=str,
                             help='MF_para: "0", "1-3", "1", "3". The parameter of the Minimize Function. \

@@ -114,10 +114,8 @@ if __name__ == "__main__":
     else:
         raise("Error! abbr_assign_method error.")
     
-    if opt.learn_mode == "SLW":
-        Add_name = opt.soft_label_func + "_" + opt.Add_name
-    elif opt.learn_mode == "SPLBC":
-        Add_name = opt.spl_mode + "_" + opt.Add_name
+    if opt.learn_mode == "CPLBC":
+        Add_name = opt.MF_para + "_"  + opt.TS_para + "_" + opt.Add_name
     else:
         Add_name = opt.Add_name
     model_name=opt.model_name
