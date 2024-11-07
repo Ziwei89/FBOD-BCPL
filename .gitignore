@@ -1,0 +1,10 @@
+dataset/*
+TrainFramework/stcratch_scripts/*
+**/*.pyc
+**/*.mp4
+**/*.pth
+**/*.jpg
+**/*.png
+**/*.txt
+**/*.json
+**/logs/*
