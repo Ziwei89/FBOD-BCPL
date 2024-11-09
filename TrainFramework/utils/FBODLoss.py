@@ -87,6 +87,8 @@ class LossFunc(nn.Module): #
                 targets = self.get_targets(input, targets, difficult_mode=1) ### targets is a list wiht 2 members, each is a 'bs,in_h,in_w,c' format tensor(cls and bbox).
             elif self.learn_mode == "CPLBC":
                 targets = self.get_targets(input, targets, difficult_mode=2, cpl_threshold=cpl_threshold, MF_para=self.MF_para)
+            elif self.learn_mode == "CPL" or self.learn_mode == "HEM":
+                targets = self.get_targets(input, targets, difficult_mode=3)
             else:
                 raise("Error! learn_mode error.")
 
@@ -323,7 +325,7 @@ def difficulty_loss_per_batch(difficulty_map, bboxes, out_feature_size, image_si
 
 
 class LossFunc_ThreeBranch(nn.Module): #
-    def __init__(self,num_classes, model_input_size=(672,384), scale=80., stride=2, learn_mode="SPL", soft_label_func="linear", cuda=True, gettargets=False):
+    def __init__(self,num_classes, model_input_size=(672,384), scale=80., stride=2, learn_mode="CPL", soft_label_func="linear", cuda=True, gettargets=False):
         super(LossFunc_ThreeBranch, self).__init__()
         self.num_classes = num_classes
         self.model_input_size = model_input_size

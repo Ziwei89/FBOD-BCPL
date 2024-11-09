@@ -52,10 +52,10 @@ do
     modelB_total_train_val_loss_ap50_str=$(python3 train_AP50.py \
         --data_root_path=$p_data_root_path \
         --data_augmentation \
+        --load_pretrain_model \
         --data_subset="subsetAllB" \
         --modelAorB="modelB" \
         --learn_mode="CPLBC" \
-        --load_pretrain_model \
         --MF_para=$p_MF_para \
         --TS_para=$p_TS_para \
         --Add_name=$p_Add_name \
@@ -76,10 +76,10 @@ do
     modelA_total_train_val_loss_ap50_str=$(python3 train_AP50.py \
         --data_root_path=$p_data_root_path \
         --data_augmentation \
+        --load_pretrain_model \
         --data_subset="subsetAllA" \
         --modelAorB="modelA" \
         --learn_mode="CPLBC" \
-        --load_pretrain_model \
         --MF_para=$p_MF_para \
         --TS_para=$p_TS_para \
         --Add_name=$p_Add_name \

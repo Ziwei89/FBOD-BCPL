@@ -38,6 +38,8 @@ if __name__ == "__main__":
     base_Add_name = opt.Add_name
     if opt.learn_mode == "CPLBC":
         Add_name = opt.MF_para + "_"  + opt.TS_para + "_" + opt.Add_name
+    elif opt.learn_mode == "CPL":
+        Add_name = opt.cpl_mode + "_" + opt.Add_name
     else:
         Add_name = opt.Add_name
     model_name="FB_object_detect_model.pth"
@@ -65,7 +67,7 @@ if __name__ == "__main__":
         raise ValueError(f"Error! No train_annotation_path: {annotation_path}")
     dataset_image_path = opt.data_root_path + "images/train/"
 
-    get_box_info_for_one_image = getBoxInfoListForOneImage(image_size = (model_input_size[1],model_input_size[0]), gamma=1) # image_size w,h
+    get_box_info_for_one_image = getBoxInfoListForOneImage(image_size = (model_input_size[1],model_input_size[0])) # image_size w,h
 
     
     with open(annotation_path) as f:

@@ -221,6 +221,17 @@ if __name__ == "__main__":
     base_Add_name = opt.Add_name
     if opt.learn_mode == "CPLBC":
         Add_name = opt.MF_para + "_"  + opt.TS_para + "_" + opt.Add_name
+        if opt.MF_para == "1-3": # The parameter of the Minimize Function
+            MF_para = 1.0/3
+        else:
+            MF_para = float(opt.MF_para)
+        
+        if opt.TS_para == "1-3": # The parameter of the Training Scheduling
+            TS_para = 1.0/3
+        else:
+            TS_para = float(opt.TS_para)
+    elif opt.learn_mode == "CPL":
+        Add_name = opt.cpl_mode + "_" + opt.Add_name
     else:
         Add_name = opt.Add_name
     
@@ -237,22 +248,13 @@ if __name__ == "__main__":
     log_pic_name_ap50 = save_model_dir + "ap50.jpg"
     ################################################
 
-    if opt.MF_para == "1-3":
-        MF_para = 1.0/3
-    else:
-        MF_para = float(opt.MF_para)
-    
-    if opt.TS_para == "1-3":
-        TS_para = 1.0/3
-    else:
-        TS_para = float(opt.TS_para)
-
     config_txt = save_model_dir + "config.txt"
     if os.path.exists(config_txt):
         pass
     else:
         config_txt_file = open(config_txt, 'w')
         config_txt_file.write("Input mode: " + opt.input_mode + "\n")
+        config_txt_file.write("Data root path: " + opt.data_root_path + "\n")
         config_txt_file.write("Aggregation method: " + opt.aggregation_method + "\n")
         config_txt_file.write("Backbone name: " + opt.backbone_name + "\n")
         config_txt_file.write("Fusion method: " + opt.fusion_method + "\n")
@@ -263,8 +265,11 @@ if __name__ == "__main__":
         config_txt_file.write("Load pretrain model: " + str(opt.load_pretrain_model) + "\n")
         config_txt_file.write("Learn rate: " + str(opt.lr) + "\n")
         config_txt_file.write("Learn mode: " + opt.learn_mode + "\n")
-        config_txt_file.write("The parameter of the Minimize Function: " + str(MF_para) + "\n")
-        config_txt_file.write("The parameter of the Training Scheduling: " + str(TS_para) + "\n")
+        if opt.learn_mode == "CPLBC":
+            config_txt_file.write("The parameter of the Minimize Function: " + str(MF_para) + "\n")
+            config_txt_file.write("The parameter of the Training Scheduling: " + str(TS_para) + "\n")
+        if opt.learn_mode == "CPL":
+            config_txt_file.write("CPL mode: " + opt.cpl_mode + "\n")
         config_txt_file.close()
 
     #-------------------------------#

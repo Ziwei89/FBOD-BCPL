@@ -28,7 +28,7 @@ class FB_detector(object):
     ### backbone_name="cspdarknet53": ### Extract parameters. input_channels equal to aggregation_output_channels.
     def __init__(self, model_input_size=(384,672),
                        input_img_num=5, aggregation_output_channels=16, aggregation_method="multiinput", input_mode="GRG", backbone_name="cspdarknet53", fusion_method="concat",
-                       learn_mode="SPL", abbr_assign_method="ba", Add_name="0812_1", model_name="FB_object_detect_model.pth",
+                       learn_mode="CPL", abbr_assign_method="ba", Add_name="0812_1", model_name="FB_object_detect_model.pth",
                        scale=80.):
         self.__dict__.update(self._defaults)
         self.model_input_size=model_input_size

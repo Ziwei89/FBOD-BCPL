@@ -34,6 +34,8 @@ if __name__ == "__main__":
     
     if opt.learn_mode == "CPLBC":
         Add_name = opt.MF_para + "_"  + opt.TS_para + "_" + opt.Add_name
+    elif opt.learn_mode == "CPL":
+        Add_name = opt.cpl_mode + "_" + opt.Add_name
     else:
         Add_name = opt.Add_name
     model_name=opt.model_name

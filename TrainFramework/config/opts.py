@@ -75,14 +75,19 @@ class opts(object):
         self.parser.add_argument('--total_Epoch', default=100, type=int,
                             help='total_Epoch: the total epoch.')
         
+        self.parser.add_argument('--current_epoch', default=0, type=int,
+                            help='total_Epoch: the total epoch.')
+        
         self.parser.add_argument('--cross_vx', default="cross_v1", type=str,
                             help='cross_vx: The Cross Validation data set')
         
-        self.parser.add_argument('--learn_mode', default="SPLBC", type=str,
-                            help='learn_mode: "Normal", "Easy_sample", and "CPLBC". \
+        self.parser.add_argument('--learn_mode', default="CPLBC", type=str,
+                            help='learn_mode: "Normal", "Easy_sample", "CPLBC", "CPL", and "HEM". \
                                  "Normal": means to train the model with all sample, \
                                  "Easy_sample": means using the easy samples to the model, \
-                                 "CPLBC": means the co-paced learning based on confierence.')
+                                 "CPLBC": means the co-paced learning based on confierence. \
+                                 "CPL": means the co-paced learning based on loss. \
+                                 "HEM": means hard example mining.')
         
         self.parser.add_argument('--MF_para', default="1-3", type=str,
                             help='MF_para: "0", "1-3", "1", "3". The parameter of the Minimize Function. \
@@ -91,6 +96,12 @@ class opts(object):
         self.parser.add_argument('--TS_para', default="1", type=str,
                             help='TS_para: "1-3", "1", "3". The parameter of the Training Scheduling. \
                                  "1-3": means 1/3.')
+        
+        self.parser.add_argument('--cpl_mode', default="hard", type=str,
+                            help='cpl_mode: "hard", "linear", "logarithmic". \
+                                 "hard": hard regularizer, \
+                                 "linear": soft regularizer with linear, \
+                                 "logarithmic": soft regularizer with logarithmic.')
         
         ######### for test
         self.parser.add_argument('--model_name', default="FB_object_detect_model.pth", type=str,

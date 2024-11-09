@@ -225,6 +225,8 @@ class getTargets(nn.Module):
                     sample_weight = 0
             elif difficult_mode == 2: # CPL-BC mode
                 sample_weight = getCPL_SampleWeight(bbox[5], threshold_lamda=cpl_threshold, MF_para=MF_para)
+            elif difficult_mode == 3: # cpl/hem mode
+                sample_weight = bbox[5]
             else:
                 raise("Error! difficult_mode error.")
                 
