@@ -373,6 +373,7 @@ if __name__ == "__main__":
     #   load model
     #-------------------------------------------#
     if opt.start_Epoch !=0 or opt.load_pretrain_model:
+
         if Cuda:
             device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         else:
@@ -448,7 +449,6 @@ if __name__ == "__main__":
     start_Epoch = opt.start_Epoch
     lr = lr*((0.95)**start_Epoch)
     end_Epoch = opt.end_Epoch
-    total_Epoch = opt.total_Epoch
 
     optimizer_a = optim.Adam(net_a.parameters(),lr,weight_decay=5e-4)
     lr_scheduler_a = optim.lr_scheduler.StepLR(optimizer_a,step_size=1,gamma=0.95)
@@ -572,7 +572,7 @@ if __name__ == "__main__":
         #################### train model B #####################
         net_b = net_b.train()
         train_loss_b, val_loss_b,largest_AP_50_record_b, AP_50_b = fit_one_epoch(largest_AP_50_b,net_b,model_b,optimizer_b,loss_func_train,loss_func_val,epoch,epoch_size,epoch_size_val,train_dataloader_b,val_dataloader,
-                                                                            total_Epoch,Cuda,save_model_dir_b, labels_to_results=labels_to_results, detect_post_process=detect_post_process, cpl_threshold=cpl_threshold)
+                                                                            end_Epoch,Cuda,save_model_dir_b, labels_to_results=labels_to_results, detect_post_process=detect_post_process, cpl_threshold=cpl_threshold)
         largest_AP_50_b = largest_AP_50_record_b
         if (epoch+1)>=2:
             train_loss_list_b.append(train_loss_b.item())
@@ -585,7 +585,7 @@ if __name__ == "__main__":
         #################### train model A #####################
         net_a = net_a.train()
         train_loss_a, val_loss_a,largest_AP_50_record_a, AP_50_a = fit_one_epoch(largest_AP_50_a,net_a,model_a,optimizer_a,loss_func_train,loss_func_val,epoch,epoch_size,epoch_size_val,train_dataloader_a,val_dataloader,
-                                                                            total_Epoch,Cuda,save_model_dir_a, labels_to_results=labels_to_results, detect_post_process=detect_post_process, cpl_threshold=cpl_threshold)
+                                                                            end_Epoch,Cuda,save_model_dir_a, labels_to_results=labels_to_results, detect_post_process=detect_post_process, cpl_threshold=cpl_threshold)
         largest_AP_50_a = largest_AP_50_record_a
         if (epoch+1)>=2:
             train_loss_list_a.append(train_loss_a.item())

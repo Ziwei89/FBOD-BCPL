@@ -72,12 +72,6 @@ class opts(object):
         self.parser.add_argument('--end_Epoch', default=100, type=int,
                             help='end_Epoch: the end epoch.')
         
-        self.parser.add_argument('--total_Epoch', default=100, type=int,
-                            help='total_Epoch: the total epoch.')
-        
-        self.parser.add_argument('--current_epoch', default=0, type=int,
-                            help='total_Epoch: the total epoch.')
-        
         self.parser.add_argument('--cross_vx', default="cross_v1", type=str,
                             help='cross_vx: The Cross Validation data set')
         
