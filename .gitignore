@@ -1,5 +1,6 @@
 dataset/*
 TrainFramework/stcratch_scripts/*
+**/*.sh
 **/*.pyc
 **/*.mp4
 **/*.pth
