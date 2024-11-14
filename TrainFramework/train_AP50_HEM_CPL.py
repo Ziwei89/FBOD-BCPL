@@ -133,7 +133,7 @@ def fit_one_epoch(largest_AP_50,net,model,optimizer,loss_func_train,loss_func_va
 
             start_time = time.time()
     net.eval()
-    # print('Start Validation')
+    print('Start Validation')
     with tqdm(total=epoch_size_val, desc=f'Epoch {epoch + 1}/{Epoch}',postfix=dict,mininterval=0.3) as pbar:
         all_label_obj_list = []
         all_obj_result_list = []
@@ -243,10 +243,10 @@ if __name__ == "__main__":
     base_Add_name = opt.Add_name
 
     if opt.prior_way == "NP":
-        Add_name = opt.priori_way + "_" + opt.Add_name
+        Add_name = opt.prior_way + "_" + opt.Add_name
         prior_learn_mode = "Normal"
     elif opt.prior_way == "ESP":
-        Add_name = opt.priori_way + "_" + opt.Add_name
+        Add_name = opt.prior_way + "_" + opt.Add_name
         prior_learn_mode = "Easy_sample"
     else:
         Add_name = opt.Add_name
@@ -395,6 +395,7 @@ if __name__ == "__main__":
     #   load model
     #-------------------------------------------#
     if opt.start_Epoch !=0 or opt.load_pretrain_model:
+        print('Loading weights into state dict...')
         if Cuda:
             device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         else:
@@ -420,6 +421,7 @@ if __name__ == "__main__":
             pretrained_dict = {k: v for k, v in pretrained_dict.items() if np.shape(model_dict[k]) ==  np.shape(v)}
             model_dict.update(pretrained_dict)
             model_b.load_state_dict(model_dict)
+        print('Finished loading pretrained model!')
     else:
         print('Train the model from scratch!')
 
@@ -509,7 +511,7 @@ if __name__ == "__main__":
         if opt.learn_mode == "CPL" or opt.learn_mode == "HEM":
             ################ Use model A to update object weight for model B ##########################
             net_a = net_a.eval()
-            print("Update Object Weight")
+            print("Use model A to update object weight for model B")
             image_info_list = []
             with tqdm(total=len(train_lines_b)) as pbar:
                 for line in train_lines_b:
@@ -584,7 +586,7 @@ if __name__ == "__main__":
             ###########################################################################################
             ################ Use model B to update object weight for model A ##########################
             net_b = net_b.eval()
-            print("Update Object Weight")
+            print("Use model B to update object weight for model A")
             image_info_list = []
             with tqdm(total=len(train_lines_a)) as pbar:
                 for line in train_lines_a:
@@ -599,7 +601,7 @@ if __name__ == "__main__":
                         model_input = torch.from_numpy(model_input)
                         if Cuda:
                             model_input = model_input.cuda()
-                        predictions = net_a(model_input)
+                        predictions = net_b(model_input)
                     ### sample loss
                     image_info_instance.box_info_list = get_box_info_for_one_image(predictions, raw_bboxes, bboxes)
                     image_info_list.append(image_info_instance)
@@ -658,6 +660,7 @@ if __name__ == "__main__":
             train_dataloader_a = DataLoader(train_data_a, batch_size=Batch_size, shuffle=True, num_workers=4, pin_memory=True, collate_fn=dataset_collate)
             ###########################################################################################
         #################### train model B #####################
+        print("Train the model b")
         net_b = net_b.train()
         train_loss_b, val_loss_b,largest_AP_50_record_b, AP_50_b = fit_one_epoch(largest_AP_50_b,net_b,model_b,optimizer_b,loss_func_train,loss_func_val,epoch,epoch_size,epoch_size_val,train_dataloader_b,val_dataloader,
                                                                             end_Epoch,Cuda,save_model_dir_b, labels_to_results=labels_to_results, detect_post_process=detect_post_process)
@@ -671,6 +674,7 @@ if __name__ == "__main__":
             draw_curve_ap50(start_log_epoch=30, epoch=epoch+1, AP50_list=ap_50_list_b, pic_name=log_pic_name_ap50_b)
         lr_scheduler_b.step()
         #################### train model A #####################
+        print("Train the model a")
         net_a = net_a.train()
         train_loss_a, val_loss_a,largest_AP_50_record_a, AP_50_a = fit_one_epoch(largest_AP_50_a,net_a,model_a,optimizer_a,loss_func_train,loss_func_val,epoch,epoch_size,epoch_size_val,train_dataloader_a,val_dataloader,
                                                                             end_Epoch,Cuda,save_model_dir_a, labels_to_results=labels_to_results, detect_post_process=detect_post_process)

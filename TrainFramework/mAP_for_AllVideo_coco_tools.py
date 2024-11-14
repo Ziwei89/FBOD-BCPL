@@ -115,10 +115,10 @@ if __name__ == "__main__":
         raise("Error! abbr_assign_method error.")
     
     if opt.prior_way == "NP":
-        Add_name = opt.priori_way + "_" + opt.Add_name
+        Add_name = opt.prior_way + "_" + opt.Add_name
         prior_learn_mode = "Normal"
     elif opt.prior_way == "ESP":
-        Add_name = opt.priori_way + "_" + opt.Add_name
+        Add_name = opt.prior_way + "_" + opt.Add_name
         prior_learn_mode = "Easy_sample"
     else:
         Add_name = opt.Add_name

@@ -41,9 +41,6 @@ class opts(object):
                             help='scale_min_max_list: Object scale normalization factor for multi scale output model, "s1,s2,s3,s4,s5,s6", "s1,s2" is the max min value of large scale. \
                                   Need to count the object scale, and divide to 3 sets, log the min max of each set.')
         
-        self.parser.add_argument('--input_train_val_loss_ap50_str', default="None/None/None/0", type=str,
-                            help='input_train_val_loss_ap50_str:.')
-        
         ######### for train
         self.parser.add_argument('--data_subset', default="subsetA", type=str,
                             help='learn_mode: subsetA, subsetB or subsetAll...')
@@ -74,6 +71,11 @@ class opts(object):
         
         self.parser.add_argument('--cross_vx', default="cross_v1", type=str,
                             help='cross_vx: The Cross Validation data set')
+        
+        self.parser.add_argument('--prior_way', default="NP", type=str,
+                            help='prior_way: "NP",or "ESP". \
+                                  "NP": means Normal Prior, \
+                                   "ESP": means Easy Sample Prior.')
         
         self.parser.add_argument('--learn_mode', default="CPLBC", type=str,
                             help='learn_mode: "Normal", "Easy_sample", "CPLBC", "CPL", and "HEM". \
