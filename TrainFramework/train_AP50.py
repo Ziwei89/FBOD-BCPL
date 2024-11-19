@@ -266,9 +266,16 @@ if __name__ == "__main__":
         prior_save_model_dir_b = "logs/" + num_to_english_c_dic[opt.input_img_num] + "/" + opt.model_input_size + "/" + opt.input_mode + "_" + opt.aggregation_method \
                                 + "_" + opt.backbone_name + "_" + opt.fusion_method + "_" + prior_learn_mode + "_" + abbr_assign_method \
                                 + "_modelB/"
-        model_name = "FB_object_detect_model.pth"
-        shutil.copy(prior_save_model_dir_a + model_name, save_model_dir_a + model_name)
-        shutil.copy(prior_save_model_dir_b + model_name, save_model_dir_b + model_name)
+        if opt.pretrain_model_name_a == "None":
+            pretrain_model_name_a = "FB_object_detect_model.pth"
+        else:
+            pretrain_model_name_a = opt.pretrain_model_name_a
+        if opt.pretrain_model_name_b == "None":
+            pretrain_model_name_b = "FB_object_detect_model.pth"
+        else:
+            pretrain_model_name_b = opt.pretrain_model_name_b
+        shutil.copy(prior_save_model_dir_a + pretrain_model_name_a, save_model_dir_a + pretrain_model_name_a)
+        shutil.copy(prior_save_model_dir_b + pretrain_model_name_b, save_model_dir_b + pretrain_model_name_b)
 
     ############### For log figure ################
     log_pic_name_loss_a = save_model_dir_a + "loss.jpg"
@@ -300,6 +307,8 @@ if __name__ == "__main__":
             config_txt_file.write("The parameter of the Training Scheduling: " + str(TS_para) + "\n")
         if opt.learn_mode == "CPL":
             config_txt_file.write("CPL mode: " + opt.cpl_mode + "\n")
+        config_txt_file.write("Pretrain model a: " + opt.prior_save_model_dir_a + pretrain_model_name_a + "\n")
+        config_txt_file.write("Pretrain model b: " + opt.prior_save_model_dir_b + pretrain_model_name_b + "\n")
         config_txt_file.close()
 
     #-------------------------------#
@@ -379,7 +388,7 @@ if __name__ == "__main__":
         else:
             device = torch.device('cpu')
         ##################### load model A #############################
-        pretrain_model_path_a = save_model_dir_a + "FB_object_detect_model.pth"
+        pretrain_model_path_a = save_model_dir_a + pretrain_model_name_a
         if not os.path.exists(pretrain_model_path_a):
             raise ValueError(f"Error! No pretrain model: {pretrain_model_path_a}")
         else:
@@ -390,7 +399,7 @@ if __name__ == "__main__":
             model_a.load_state_dict(model_dict)
         
         ##################### load model B #############################
-        pretrain_model_path_b = save_model_dir_b + "FB_object_detect_model.pth"
+        pretrain_model_path_b = save_model_dir_b + pretrain_model_name_b
         if not os.path.exists(pretrain_model_path_b):
             raise ValueError(f"Error! No pretrain model: {pretrain_model_path_b}")
         else:

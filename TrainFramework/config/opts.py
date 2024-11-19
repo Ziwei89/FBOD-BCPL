@@ -57,8 +57,11 @@ class opts(object):
         self.parser.add_argument('--load_pretrain_model', action='store_true',
                             help='load_pretrain_model: Determin whether to load the pretrain model.')
         
-        self.parser.add_argument('--pretrain_model_path', default="logs/non.pth", type=str,
-                            help='pretrain_model_path: the pretrain model to speed train.')
+        self.parser.add_argument('--pretrain_model_name_a', default="None", type=str,
+                            help='pretrain_model_name_a: the pretrain model name.')
+        
+        self.parser.add_argument('--pretrain_model_name_b', default="None", type=str,
+                            help='pretrain_model_name_b: the pretrain model name.')
         
         self.parser.add_argument('--lr', default=1e-3, type=float,
                             help='lr: the learn rate.')
