@@ -75,7 +75,7 @@ class opts(object):
         self.parser.add_argument('--cross_vx', default="cross_v1", type=str,
                             help='cross_vx: The Cross Validation data set')
         
-        self.parser.add_argument('--prior_way', default="NP", type=str,
+        self.parser.add_argument('--prior_way', default="None", type=str,
                             help='prior_way: "NP",or "ESP". \
                                   "NP": means Normal Prior, \
                                    "ESP": means Easy Sample Prior.')
