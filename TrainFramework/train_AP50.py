@@ -310,8 +310,8 @@ if __name__ == "__main__":
         if opt.learn_mode == "CPL":
             config_txt_file.write("CPL mode: " + opt.cpl_mode + "\n")
         if opt.prior_way == "NP" or opt.prior_way == "ESP":
-            config_txt_file.write("Pretrain model a: " + opt.prior_save_model_dir_a + pretrain_model_name_a + "\n")
-            config_txt_file.write("Pretrain model b: " + opt.prior_save_model_dir_b + pretrain_model_name_b + "\n")
+            config_txt_file.write("Pretrain model a: " + prior_save_model_dir_a + pretrain_model_name_a + "\n")
+            config_txt_file.write("Pretrain model b: " + prior_save_model_dir_b + pretrain_model_name_b + "\n")
         config_txt_file.close()
 
     #-------------------------------#
