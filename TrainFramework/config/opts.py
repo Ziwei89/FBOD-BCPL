@@ -76,13 +76,13 @@ class opts(object):
                             help='cross_vx: The Cross Validation data set')
         
         self.parser.add_argument('--prior_way', default="None", type=str,
-                            help='prior_way: "NP",or "ESP". \
-                                  "NP": means Normal Prior, \
+                            help='prior_way: "ASP",or "ESP". \
+                                  "ASP": means All_sample Prior, \
                                    "ESP": means Easy Sample Prior.')
         
         self.parser.add_argument('--learn_mode', default="CPLBC", type=str,
-                            help='learn_mode: "Normal", "Easy_sample", "CPLBC", "CPL", and "HEM". \
-                                 "Normal": means to train the model with all sample, \
+                            help='learn_mode: "All_sample", "Easy_sample", "CPLBC", "CPL", and "HEM". \
+                                 "All_sample": means to train the model with all sample, \
                                  "Easy_sample": means using the easy samples to the model, \
                                  "CPLBC": means the co-paced learning based on confierence. \
                                  "CPL": means the co-paced learning based on loss. \

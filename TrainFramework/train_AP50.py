@@ -220,9 +220,9 @@ if __name__ == "__main__":
     
     base_Add_name = opt.Add_name
 
-    if opt.prior_way == "NP":
+    if opt.prior_way == "ASP":
         Add_name = opt.prior_way + "_" + opt.Add_name
-        prior_learn_mode = "Normal"
+        prior_learn_mode = "All_sample"
     elif opt.prior_way == "ESP":
         Add_name = opt.prior_way + "_" + opt.Add_name
         prior_learn_mode = "Easy_sample"
@@ -269,7 +269,7 @@ if __name__ == "__main__":
     else:
         pretrain_model_name_b = opt.pretrain_model_name_b
 
-    if opt.prior_way == "NP" or opt.prior_way == "ESP":
+    if opt.prior_way == "ASP" or opt.prior_way == "ESP":
         prior_save_model_dir_a = "logs/" + num_to_english_c_dic[opt.input_img_num] + "/" + opt.model_input_size + "/" + opt.input_mode + "_" + opt.aggregation_method \
                                 + "_" + opt.backbone_name + "_" + opt.fusion_method + "_" + prior_learn_mode + "_" + abbr_assign_method \
                                 + "_modelA/"
@@ -309,7 +309,7 @@ if __name__ == "__main__":
             config_txt_file.write("The parameter of the Training Scheduling: " + str(TS_para) + "\n")
         if opt.learn_mode == "CPL":
             config_txt_file.write("CPL mode: " + opt.cpl_mode + "\n")
-        if opt.prior_way == "NP" or opt.prior_way == "ESP":
+        if opt.prior_way == "ASP" or opt.prior_way == "ESP":
             config_txt_file.write("Pretrain model a: " + prior_save_model_dir_a + pretrain_model_name_a + "\n")
             config_txt_file.write("Pretrain model b: " + prior_save_model_dir_b + pretrain_model_name_b + "\n")
         config_txt_file.close()
@@ -433,7 +433,7 @@ if __name__ == "__main__":
                          learn_mode=opt.learn_mode, MF_para=MF_para, cuda=Cuda, gettargets=True)
     
     loss_func_val = LossFunc(num_classes=num_classes, model_input_size=(model_input_size[1], model_input_size[0]), \
-                         learn_mode="Normal", cuda=Cuda, gettargets=True)
+                         learn_mode="All_sample", cuda=Cuda, gettargets=True)
 
 
     # For calculating the AP50

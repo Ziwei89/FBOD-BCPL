@@ -242,9 +242,9 @@ if __name__ == "__main__":
     
     base_Add_name = opt.Add_name
 
-    if opt.prior_way == "NP":
+    if opt.prior_way == "ASP":
         Add_name = opt.prior_way + "_" + opt.Add_name
-        prior_learn_mode = "Normal"
+        prior_learn_mode = "All_sample"
     elif opt.prior_way == "ESP":
         Add_name = opt.prior_way + "_" + opt.Add_name
         prior_learn_mode = "Easy_sample"
@@ -281,7 +281,7 @@ if __name__ == "__main__":
                              + "_"  + Add_name + "_modelB/"
     os.makedirs(save_model_dir_b, exist_ok=True)
 
-    if opt.prior_way == "NP" or opt.prior_way == "ESP":
+    if opt.prior_way == "ASP" or opt.prior_way == "ESP":
         prior_save_model_dir_a = "logs/" + num_to_english_c_dic[opt.input_img_num] + "/" + opt.model_input_size + "/" + opt.input_mode + "_" + opt.aggregation_method \
                                 + "_" + opt.backbone_name + "_" + opt.fusion_method + "_" + prior_learn_mode + "_" + abbr_assign_method \
                                 + "_modelA/"
@@ -452,7 +452,7 @@ if __name__ == "__main__":
                          learn_mode=opt.learn_mode, MF_para=MF_para, cuda=Cuda, gettargets=True)
     
     loss_func_val = LossFunc(num_classes=num_classes, model_input_size=(model_input_size[1], model_input_size[0]), \
-                         learn_mode="Normal", cuda=Cuda, gettargets=True)
+                         learn_mode="All_sample", cuda=Cuda, gettargets=True)
 
 
     # For calculating the AP50

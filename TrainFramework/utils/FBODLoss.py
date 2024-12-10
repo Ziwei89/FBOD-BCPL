@@ -81,7 +81,7 @@ class LossFunc(nn.Module): #
         FloatTensor = torch.cuda.FloatTensor if self.cuda else torch.FloatTensor
         # targets is bboxes, bbox[0] cx, bbox[1] cy, bbox[2] w, bbox[3] h, bbox[4] class_id, bbox[5] score
         if self.gettargets:
-            if self.learn_mode == "Normal":
+            if self.learn_mode == "All_sample":
                 targets = self.get_targets(input, targets, difficult_mode=0) ### targets is a list wiht 2 members, each is a 'bs,in_h,in_w,c' format tensor(cls and bbox).
             elif self.learn_mode == "Easy_sample":
                 targets = self.get_targets(input, targets, difficult_mode=1) ### targets is a list wiht 2 members, each is a 'bs,in_h,in_w,c' format tensor(cls and bbox).
@@ -343,7 +343,7 @@ class LossFunc_ThreeBranch(nn.Module): #
         FloatTensor = torch.cuda.FloatTensor if self.cuda else torch.FloatTensor
         # targets is bboxes, bbox[0] cx, bbox[1] cy, bbox[2] w, bbox[3] h, bbox[4] class_id, bbox[5] score
         if self.gettargets:
-            if self.learn_mode == "Normal":
+            if self.learn_mode == "All_sample":
                 targets = self.get_targets(input, targets, difficult_mode=0) ### targets is a list wiht 2 members, each is a 'bs,in_h,in_w,c' format tensor(cls and bbox).
             elif self.learn_mode == "SLW" and self.soft_label_func == "linear":
                 targets = self.get_targets(input, targets, difficult_mode=1) ### targets is a list wiht 2 members, each is a 'bs,in_h,in_w,c' format tensor(cls and bbox).
