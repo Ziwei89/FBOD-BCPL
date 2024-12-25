@@ -244,10 +244,10 @@ if __name__ == "__main__":
 
     if opt.prior_way == "ASP":
         Add_name = opt.prior_way + "_" + opt.Add_name
-        prior_learn_mode = "All_sample"
+        prior_learn_mode = "All_Sample"
     elif opt.prior_way == "ESP":
         Add_name = opt.prior_way + "_" + opt.Add_name
-        prior_learn_mode = "Easy_sample"
+        prior_learn_mode = "Easy_Sample"
     else:
         Add_name = opt.Add_name
     
@@ -452,7 +452,7 @@ if __name__ == "__main__":
                          learn_mode=opt.learn_mode, MF_para=MF_para, cuda=Cuda, gettargets=True)
     
     loss_func_val = LossFunc(num_classes=num_classes, model_input_size=(model_input_size[1], model_input_size[0]), \
-                         learn_mode="All_sample", cuda=Cuda, gettargets=True)
+                         learn_mode="All_Sample", cuda=Cuda, gettargets=True)
 
 
     # For calculating the AP50

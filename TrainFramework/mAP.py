@@ -135,10 +135,10 @@ if __name__ == "__main__":
     
     if opt.prior_way == "ASP":
         Add_name = opt.prior_way + "_" + opt.Add_name
-        prior_learn_mode = "All_sample"
+        prior_learn_mode = "All_Sample"
     elif opt.prior_way == "ESP":
         Add_name = opt.prior_way + "_" + opt.Add_name
-        prior_learn_mode = "Easy_sample"
+        prior_learn_mode = "Easy_Sample"
     else:
         Add_name = opt.Add_name
         
