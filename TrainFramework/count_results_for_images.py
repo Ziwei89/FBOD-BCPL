@@ -130,7 +130,8 @@ if __name__ == "__main__":
             else:
                 PD_difficulty_obj_count[4] += 1
     total_objs_num = GT_difficulty_obj_count[0] + GT_difficulty_obj_count[1] + GT_difficulty_obj_count[2] + GT_difficulty_obj_count[3]
-    detection_objs_num = PD_difficulty_obj_count[0] + PD_difficulty_obj_count[1] + PD_difficulty_obj_count[2] + PD_difficulty_obj_count[3]
+    true_detection_objs_num = PD_difficulty_obj_count[0] + PD_difficulty_obj_count[1] + PD_difficulty_obj_count[2] + PD_difficulty_obj_count[3]
+    detection_objs_num = PD_difficulty_obj_count[0] + PD_difficulty_obj_count[1] + PD_difficulty_obj_count[2] + PD_difficulty_obj_count[3] + PD_difficulty_obj_count[4]
     detection_rate = [0,0,0,0]
     detection_rate[0] = PD_difficulty_obj_count[0]/GT_difficulty_obj_count[0]
     detection_rate[1] = PD_difficulty_obj_count[1]/GT_difficulty_obj_count[1]
@@ -140,6 +141,7 @@ if __name__ == "__main__":
     print("GT_difficulty_obj_count: ", GT_difficulty_obj_count)
     print("PD_difficulty_obj_count: ", PD_difficulty_obj_count)
     print("total_objs_num: ", total_objs_num)
+    print("true_detection_objs_num: ", true_detection_objs_num)
     print("detection_objs_num: ", detection_objs_num)
     print("detection_rate: ", detection_rate)
     print("false_detection_rate: ", false_detection_rate)
