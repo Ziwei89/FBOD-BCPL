@@ -63,12 +63,23 @@ if __name__ == "__main__":
     else:
         raise("Error! abbr_assign_method error.")
     
-    if opt.learn_mode == "CPLBC":
-        Add_name = opt.MF_para + "_"  + opt.TS_para + "_" + opt.Add_name
-    elif opt.learn_mode == "CPL":
-        Add_name = opt.cpl_mode + "_" + opt.Add_name
+    if opt.prior_way == "ASP":
+        Add_name = opt.prior_way + "_" + opt.Add_name
+        prior_learn_mode = "All_Sample"
+    elif opt.prior_way == "ESP":
+        Add_name = opt.prior_way + "_" + opt.Add_name
+        prior_learn_mode = "Easy_Sample"
     else:
         Add_name = opt.Add_name
+        
+    if opt.learn_mode == "CPLBC":
+        Add_name = opt.MF_para + "_"  + opt.TS_para + "_" + Add_name
+    elif opt.learn_mode == "CPL":
+        Add_name = opt.cpl_mode + "_" + Add_name
+    else:
+        Add_name = Add_name
+    Add_name = Add_name + "_" + opt.modelAorB
+    
     model_name=opt.model_name
 
     # FB_detector parameters
