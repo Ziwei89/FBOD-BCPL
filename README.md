@@ -1,7 +1,7 @@
 # CPL-BC
 监控摄像机捕捉到的飞鸟目标，由于其大小或与背景相似程度不同，显示出不同程度的识别难度。为了缓解困难样本对监控视频中飞鸟目标检测模型(飞鸟目标检测模型[FBOD](https://github.com/Ziwei89/FBOD))训练的负面影响，本文提出了基于置信度的协同步调学习策略（CPL-BC），并将其应用于FBOD模型的训练过程中。该策略包括维护两个结构相同但初始参数配置不同的模型，它们相互协作，选择容易的样本进行训练，当预测置信度超过设定的阈值时。随着训练的进行，该策略逐渐降低阈值，从而逐步增强模型识别目标的能力，从容易到难。在应用CPL-BC之前，对两个FBOD模型进行了预训练，使其具有评估飞鸟物体样本难度的能力。  
 
-该项目是在项目[FBOD](https://github.com/Ziwei89/FBOD)和[FBOD-BSPL](https://github.com/Ziwei89/FBOD-BSPL)基础上，设计的新的模型训练策略。大多数参数含义和设置与[FBOD](https://github.com/Ziwei89/FBOD)和[FBOD-BSPL](https://github.com/Ziwei89/FBOD-BSPL)相同，该项目将不再赘述。模型训练时，与本项目无关的参数（与模型训练策略无关的参数)采用默认参数。若想了解这些参数请访问：https://github.com/Ziwei89/FBOD和https://github.com/Ziwei89/FBOD-BSPL  
+该项目是在项目[FBOD](https://github.com/Ziwei89/FBOD)和[FBOD-BSPL](https://github.com/Ziwei89/FBOD-BSPL)基础上，设计的新的模型训练策略。大多数参数含义和设置与[FBOD](https://github.com/Ziwei89/FBOD)和[FBOD-BSPL](https://github.com/Ziwei89/FBOD-BSPL)相同，该项目将不再赘述。模型训练时，与本项目无关的参数（与模型训练策略无关的参数)采用默认参数。若想了解这些参数请访问：https://github.com/Ziwei89/FBOD 和 https://github.com/Ziwei89/FBOD-BSPL  
 
 另外本项目默认采用了Frames padding方法。  
 
