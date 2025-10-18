@@ -69,8 +69,8 @@ if __name__ == "__main__":
     
     model_name=opt.model_name
     
-    video_path = opt.data_root_path + "val/video/"
-    label_path = opt.data_root_path + "val/labels/" #.xlm label file path
+    video_path = opt.data_root_path + "videos/val/"
+    label_path = opt.data_root_path + "labels/val/" #.xlm label file path
     label_name_list=os.listdir(label_path)
 
     video_name = opt.video_name
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     raw_image_shape = np.array([height, width])
 
-    Save_video_name = "./test_output/" + video_name.split(".")[0] + "_SPL-linear_out.mp4"
+    Save_video_name = "./test_output/" + video_name.split(".")[0] + "_" + opt.learn_mode + "_" + opt.prior_way +"_out.mp4"
     fps = 25
 
     video_dir = os.path.join("./", Save_video_name)
