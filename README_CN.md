@@ -86,13 +86,13 @@ bird
 相关参数解释如下(在设置时请参考TrainFramework/config/opts.py文件)：  
 ```
 data_root_path                     #数据集根路径
-pretrain_model_path                #预训练模型的路径。在置信度的简单样本先验自步学习策略，需使用简单样本训练策略训练的模型
+pretrain_model_path                #预训练模型的路径。需使用简单样本训练策略或全样本训练策略训练的模型
 Add_name                           #在相关记录文件(如模型保存文件夹或训练记录图片)，增加后缀
 learn_mode                         #模型学习策略：
                                             All_Sample：全样本普通训练策略
                                             Easy_Sample：简单样本训练策略
-                                            CPLBC：基于置信度自步学习训练策略
-                                            CPL：普通自步学习策略
+                                            CPLBC：基于置信度协同步调学习训练策略
+                                            CPL：基于损失的协同步调学习策略
                                             HEM：困难样本挖掘模型训练策略
 cpl_mode                            #自步学习正则化器，基于损失的协同步调学习策略时有效: hard, linear, logarithmic
 prior_way                           #先验方式：ASP或ESP，即全样本先验或简单样本先验
@@ -129,7 +129,7 @@ python train_AP50.py \
         --Add_name=20241220
 cd ../
 ```
-* 普通自步学习策略 
+* 基于损失的协同步调学习策略 
 ```
 cd TrainFramework
 python train_AP50_HEM_SPL.py \
