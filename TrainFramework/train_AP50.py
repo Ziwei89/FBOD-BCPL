@@ -1,5 +1,5 @@
 #-------------------------------------#
-#       对数据集进行训练
+#       Train the model with CPLBC
 #-------------------------------------#
 import os
 from config.opts import opts
@@ -40,7 +40,7 @@ def adjust_cpl_threshold(step_proportion=0.01, e1=0.1, e2=0.9, constant=0.8, TS_
 def is_tensor(var):
     return torch.is_tensor(var)
 #---------------------------------------------------#
-#   获得类
+#   Get the classes
 #---------------------------------------------------#
 def get_classes(classes_path):
     '''loads the classes'''
@@ -427,7 +427,7 @@ if __name__ == "__main__":
         cudnn.benchmark = True
         net_b = net_b.cuda()
 
-    # 建立loss函数
+    # Creat loss function
     # dynamic label assign, so the gettargets is ture.
     loss_func_train = LossFunc(num_classes=num_classes, model_input_size=(model_input_size[1], model_input_size[0]), \
                          learn_mode=opt.learn_mode, MF_para=MF_para, cuda=Cuda, gettargets=True)
@@ -609,4 +609,5 @@ if __name__ == "__main__":
         if (epoch+1)>=30:
             ap_50_list_a.append(AP_50_a.item())
             draw_curve_ap50(start_log_epoch=30, epoch=epoch+1, AP50_list=ap_50_list_a, pic_name=log_pic_name_ap50_a)
+
         lr_scheduler_a.step()
