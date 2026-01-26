@@ -1,4 +1,4 @@
-##绘制多个条形图
+## Draw multiple bar charts
 from matplotlib import pyplot as plt
 
 fig = plt.figure()
@@ -21,7 +21,7 @@ x_16 = [i+bar_width for i in x_15]
 ax.bar(x_14, b_14, width=0.3, label="All_Sample")
 ax.bar(x_15, b_15, width=0.3, label="SS")
 ax.bar(x_16, b_16, width=0.3, label="SSP-SPL-BC")
-# ##设置x轴刻度
+## Set the X-axis scale
 plt.xticks(x_15,a)
 ax.legend()
 

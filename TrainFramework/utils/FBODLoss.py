@@ -24,20 +24,20 @@ def box_ciou(b1, b2):
     -------
     ciou: tensor, shape=(batch, feat_w, feat_h, 1)
     """
-    # 求出预测框左上角右下角
+    # Find the top-left and bottom-right corner of the prediction box
     b1_xy = b1[..., :2]
     b1_wh = b1[..., 2:4]
     b1_wh_half = b1_wh/2.
     b1_mins = b1_xy - b1_wh_half
     b1_maxes = b1_xy + b1_wh_half
-    # 求出真实框左上角右下角
+    # Find the top left corner and bottom right corner of the true box
     b2_xy = b2[..., :2]
     b2_wh = b2[..., 2:4]
     b2_wh_half = b2_wh/2.
     b2_mins = b2_xy - b2_wh_half
     b2_maxes = b2_xy + b2_wh_half
 
-    # 求真实框和预测框所有的iou
+    # Find the iou of all the real and predicted boxes
     intersect_mins = torch.max(b1_mins, b2_mins)
     intersect_maxes = torch.min(b1_maxes, b2_maxes)
     intersect_wh = torch.max(intersect_maxes - intersect_mins, torch.zeros_like(intersect_maxes))
@@ -47,14 +47,14 @@ def box_ciou(b1, b2):
     union_area = b1_area + b2_area - intersect_area
     iou = intersect_area / torch.clamp(union_area,min = 1e-6)
 
-    # 计算中心的差距
+    # Calculate the gap between the center points
     center_distance = torch.sum(torch.pow((b1_xy - b2_xy), 2), axis=-1)
     
-    # 找到包裹两个框的最小框的左上角和右下角
+    # Find the top left and bottom right corners of the smallest box that wraps the two boxes
     enclose_mins = torch.min(b1_mins, b2_mins)
     enclose_maxes = torch.max(b1_maxes, b2_maxes)
     enclose_wh = torch.max(enclose_maxes - enclose_mins, torch.zeros_like(intersect_maxes))
-    # 计算对角线距离
+    # Calculate the diagonal distance
     enclose_diagonal = torch.sum(torch.pow(enclose_wh,2), axis=-1)
     ciou = iou - 1.0 * (center_distance) / torch.clamp(enclose_diagonal,min = 1e-6)
     

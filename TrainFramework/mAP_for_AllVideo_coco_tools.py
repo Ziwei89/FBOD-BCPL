@@ -263,7 +263,7 @@ if __name__ == "__main__":
     
     
     
-    results = "./results_test.json" ##模型预测结果
+    results = "./results_test.json" ## The result of the model prediction.
     anno = "./instances_test2017.json"  ##ground truth
     coco_anno = coco.COCO(anno)
     coco_dets = coco_anno.loadRes(results)
