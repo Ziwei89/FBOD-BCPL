@@ -70,7 +70,16 @@ cd TrainFramework/dataloader/ #从项目根目录进入训练框架下dataloader
 python shuffle_txt_lines.py \
        --input_img_num=5
 ```
-运行该脚本后，将在TrainFramework/dataloader/目录下生成img_label_five_continuous_difficulty_train.txt和img_label_five_continuous_difficulty_val.txt两个文件。
+如果固定随机种子：  
+```
+cd TrainFramework/dataloader/ #从项目根目录进入训练框架下dataloader目录
+python shuffle_txt_lines.py \
+       --input_img_num=5 \
+       --seed=5
+```
+运行该脚本后，将在TrainFramework/dataloader/目录下生成img_label_five_continuous_difficulty_train.txt和img_label_five_continuous_difficulty_val.txt两个文件。  
+
+**<font color=red>特别注意：</font>如果运行shuffle_txt_lines.py设置了随机种子，那么后续训练，测试和推理都必须设置相同的随机种子，否则找不到文件或运行不正确。**
 ### (3) 准备类别txt文件
 在TrainFramework/目录下创建model_data文件夹，然后再在TrainFramework/model_data/目录下创建名为classes.txt的文件，该文件中记录类别,如：
 ```
@@ -96,6 +105,8 @@ learn_mode                         #模型学习策略：
                                             HEM：困难样本挖掘模型训练策略
 cpl_mode                            #自步学习正则化器，基于损失的协同步调学习策略时有效: hard, linear, logarithmic
 prior_way                           #先验方式：ASP或ESP，即全样本先验或简单样本先验
+seed                                #随机种子，想固定能复现训练效果时设置，仅仅使用tran_AP50.py训练模型时可以设置
+modelAorB                           #使用CPL训练模型后，有两个模型，即模型A、者模型B，测试或推理时，确定使用哪个模型
 ```
 另外两个参数MF_para和TS_para,是关于最小化函数和训练调度函数的。为了保持于论文表述一致，请保持使用默认参数。
 
@@ -109,6 +120,19 @@ python3 train_AP50.py \
         --start_Epoch=0 \
         --end_Epoch=50 \
         --learn_mode=All_Sample \
+        --Add_name=20241127
+cd ../
+```
+如果固定随机种子：  
+```
+cd TrainFramework
+python3 train_AP50.py \
+        --data_augmentation \
+        --data_root_path=../dataset/FBD-SV-2024/ \
+        --start_Epoch=0 \
+        --end_Epoch=50 \
+        --learn_mode=All_Sample \
+        --seed=5 \
         --Add_name=20241127
 cd ../
 ```
@@ -126,6 +150,22 @@ python train_AP50.py \
         --end_Epoch=100 \
         --prior_way=ASP \
         --learn_mode=CPLBC \
+        --Add_name=20241220
+cd ../
+```
+如果固定随机种子：  
+```
+cd TrainFramework
+python train_AP50.py \
+        --data_augmentation \
+        --pretrain_model_name_a=FB_object_detect_model_a.pth \
+        --pretrain_model_name_b=FB_object_detect_model_b.pth \
+        --data_root_path=../dataset/FBD-SV-2024/ \
+        --start_Epoch=0 \
+        --end_Epoch=100 \
+        --prior_way=ASP \
+        --learn_mode=CPLBC \
+        --seed=5 \
         --Add_name=20241220
 cd ../
 ```
@@ -157,3 +197,45 @@ python mAP_for_AllVideo_coco_tools.py \
         --model_name=FB_object_detect_model.pth
 cd ../
 ```
+如果训练模型时固定了随机种子，测试时必须设值与训练时相同的随机种子：  
+
+```
+cd TrainFramework
+python mAP_for_AllVideo_coco_tools.py \
+        --data_root_path=../dataset/FBD-SV-2024/ \
+        --prior_way=ASP \
+        --learn_mode=CPLBC \
+        --Add_name=20240104 \
+        --seed=5 \
+        --modelAorB=modelB \
+        --model_name=FB_object_detect_model.pth
+cd ../
+```
+## 5、使用模型检测视频中的飞鸟（运行模型时，参数设置要和对应模型训练时的参数一致）
+```
+cd TrainFramework
+python3 predict_for_video.py \
+        --data_root_path=../dataset/FBD-SV-2024/ \
+        --prior_way=ASP \
+        --learn_mode=CPLBC \
+        --Add_name=20240104 \
+        --modelAorB=modelB \
+        --model_name=FB_object_detect_model.pth
+cd ../
+```
+如果训练模型时固定了随机种子，推理时必须设值与训练时相同的随机种子：  
+
+```
+cd TrainFramework
+python3 predict_for_video.py \
+        --data_root_path=../dataset/FBD-SV-2024/ \
+        --prior_way=ASP \
+        --learn_mode=CPLBC \
+        --Add_name=20240104 \
+        --seed=5 \
+        --modelAorB=modelB \
+        --model_name=FB_object_detect_model.pth
+cd ../
+```
+
+**<font color=red>特别注意：</font>如果运行shuffle_txt_lines.py设置了随机种子，那么后续训练，测试和推理都必须设置相同的随机种子，否则找不到文件或运行不正确。**

@@ -64,6 +64,13 @@ python continuous_image_annotation.py \
        --data_root_path=../dataset/FBD-SV-2024/ \
        --input_img_num=5
 ```
+If you fix the random seed:  
+```
+cd TrainFramework/dataloader/ # Go to the data processing directory from the project root
+python shuffle_txt_lines.py \
+       --input_img_num=5 \
+       --seed=5
+``` 
 After running this script, two txt files will be generated in the TrainFramework/dataloader/ directory, namely img_label_five_continuous_difficulty_train_raw.txt and img_label_five_continuous_difficulty_val_raw.txt. The training samples in these two files are arranged in sequence. It is recommended to run the following script to shuffle them. 
 ```
 cd TrainFramework/dataloader/ # From the project root directory into the training framework under the dataloader directory
@@ -71,6 +78,9 @@ python shuffle_txt_lines.py \
        --input_img_num=5
 ```
 After running this script, two files, img_label_five_continuous_difficulty_train.txt and img_label_five_continuous_difficulty_val.txt, will be generated in the TrainFramework/dataloader/ directory.
+
+**<font color=red>Special NOTE：</font>If running shuffle_txt_lines.py sets a random seed, then subsequent training, testing, and inference must all set the same random seed, otherwise the file will not be found or it will run incorrectly.**
+
 ### (3) Prepare the classes txt file
 Create a folder named "model_data" under the "TrainFramework/" directory, and then create a file named "classes.txt" in the "TrainFramework/model_data/" directory. This file records the categories, such as: 
 ```
@@ -96,6 +106,8 @@ learn_mode                         # Model learning strategy:
                                             HEM：Model Training strategy for mining difficult samples
 cpl_mode                            # Self-paced regularizer, effective when loss-based cooperative paced learning strategy: hard, linear, logarithmic
 prior_way                           # Prior way: ASP or ESP, that is, All Sample Prior or Easy Sample Prior
+seed                                #Random seed, set if you want to consistently reproduce the training results, when only training the model with tran_AP50.py
+modelAorB                           #After training the model using CPL, there are two models, model A and model B. For testing or inference, determine which model to use
 ```
 The other two parameters, MF_para and TS_para, are about the minimization function and the training scheduling function. To be consistent with the presentation of the paper, keep using the default parameters. 
 
@@ -109,6 +121,19 @@ python3 train_AP50.py \
         --start_Epoch=0 \
         --end_Epoch=50 \
         --learn_mode=All_Sample \
+        --Add_name=20241127
+cd ../
+```
+If you fix the random seed:  
+```
+cd TrainFramework
+python3 train_AP50.py \
+        --data_augmentation \
+        --data_root_path=../dataset/FBD-SV-2024/ \
+        --start_Epoch=0 \
+        --end_Epoch=50 \
+        --learn_mode=All_Sample \
+        --seed=5 \
         --Add_name=20241127
 cd ../
 ```
@@ -126,6 +151,22 @@ python train_AP50.py \
         --end_Epoch=100 \
         --prior_way=ASP \
         --learn_mode=CPLBC \
+        --Add_name=20241220
+cd ../
+```
+If you fix the random seed:  
+```
+cd TrainFramework
+python train_AP50.py \
+        --data_augmentation \
+        --pretrain_model_name_a=FB_object_detect_model_a.pth \
+        --pretrain_model_name_b=FB_object_detect_model_b.pth \
+        --data_root_path=../dataset/FBD-SV-2024/ \
+        --start_Epoch=0 \
+        --end_Epoch=100 \
+        --prior_way=ASP \
+        --learn_mode=CPLBC \
+        --seed=5 \
         --Add_name=20241220
 cd ../
 ```
@@ -157,3 +198,45 @@ python mAP_for_AllVideo_coco_tools.py \
         --model_name=FB_object_detect_model.pth
 cd ../
 ```
+If you train the model with a fixed random seed, you must test it with the same value as the trained seed:  
+```
+cd TrainFramework
+python mAP_for_AllVideo_coco_tools.py \
+        --data_root_path=../dataset/FBD-SV-2024/ \
+        --prior_way=ASP \
+        --learn_mode=CPLBC \
+        --Add_name=20240104 \
+        --seed=5 \
+        --modelAorB=modelB \
+        --model_name=FB_object_detect_model.pth
+cd ../
+```
+
+## 5. Use the model to detect birds in videos (Run the model with the same parameters as it was trained with)
+```
+cd TrainFramework
+python3 predict_for_video.py \
+        --data_root_path=../dataset/FBD-SV-2024/ \
+        --prior_way=ASP \
+        --learn_mode=CPLBC \
+        --Add_name=20240104 \
+        --modelAorB=modelB \
+        --model_name=FB_object_detect_model.pth
+cd ../
+```
+If you train the model with a fixed random seed, you must use the same random seed at inference time:  
+
+```
+cd TrainFramework
+python3 predict_for_video.py \
+        --data_root_path=../dataset/FBD-SV-2024/ \
+        --prior_way=ASP \
+        --learn_mode=CPLBC \
+        --Add_name=20240104 \
+        --seed=5 \
+        --modelAorB=modelB \
+        --model_name=FB_object_detect_model.pth
+cd ../
+```
+
+**<font color=red>Special NOTE：</font>If running shuffle_txt_lines.py sets a random seed, then subsequent training, testing, and inference must all set the same random seed, otherwise the file will not be found or it will run incorrectly.**
