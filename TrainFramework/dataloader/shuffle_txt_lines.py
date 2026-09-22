@@ -6,14 +6,23 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--input_img_num', default=5, type=int,
                         help='input_img_num: The continous video frames, input to the model')
+    parser.add_argument('--seed', type=int, default=None,
+                                 help='Global random seed. All sub-seeds derived from this.')
     args = parser.parse_args()
+
 
     train_img_label_txt_file_raw = "img_label_" + num_to_chinese_c_dic[args.input_img_num] + "_continuous_difficulty_train_raw.txt"
     val_img_label_txt_file_raw = "img_label_" + num_to_chinese_c_dic[args.input_img_num] + "_continuous_difficulty_val_raw.txt"
     in_files = [train_img_label_txt_file_raw, val_img_label_txt_file_raw]
-
-    train_img_label_txt_file = "img_label_" + num_to_chinese_c_dic[args.input_img_num] + "_continuous_difficulty_train.txt"
-    val_img_label_txt_file = "img_label_" + num_to_chinese_c_dic[args.input_img_num] + "_continuous_difficulty_val.txt"
+    
+    if args.seed is not None:
+        random.seed(args.seed)
+        train_img_label_txt_file = "img_label_" + num_to_chinese_c_dic[args.input_img_num] + "_continuous_difficulty_train" + "_seed_" + str(args.seed)+ ".txt"
+        val_img_label_txt_file = "img_label_" + num_to_chinese_c_dic[args.input_img_num] + "_continuous_difficulty_val" + "_seed_" + str(args.seed)+ ".txt"
+    else:
+        train_img_label_txt_file = "img_label_" + num_to_chinese_c_dic[args.input_img_num] + "_continuous_difficulty_train.txt"
+        val_img_label_txt_file = "img_label_" + num_to_chinese_c_dic[args.input_img_num] + "_continuous_difficulty_val.txt"
+    
     out_files = [train_img_label_txt_file, val_img_label_txt_file]
 
     for in_file, out_file in zip(in_files, out_files):

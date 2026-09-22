@@ -23,8 +23,40 @@ from mAP import mean_average_precision
 import copy
 import shutil
 import random
+import cv2
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
+
+def _init_seed_factory_and_derive(opt):
+    """Deterministically derive all child seeds from opt.seed, hanging onto opt objects."""
+    import random as _rnd
+    factory = _rnd.Random(opt.seed)
+    opt.split_seed_b = factory.randint(0, 2**31 - 1)
+    opt.init_seed_a  = factory.randint(0, 2**31 - 1)
+    opt.init_seed_b  = factory.randint(0, 2**31 - 1)
+    return factory
+
+def set_all_seeds(seed):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    cudnn.deterministic = True
+    cudnn.benchmark = False
+    cv2.setNumThreads(0)
+    try:
+        import imgaug; imgaug.seed(seed)
+    except: pass
+
+def worker_init_fn(worker_id):
+    seed = torch.initial_seed() % 2**32
+    random.seed(seed)
+    np.random.seed(seed)
+    try:
+        import imgaug; imgaug.seed(seed)
+    except: pass
 
 def adjust_cpl_threshold(step_proportion=0.01, e1=0.1, e2=0.9, constant=0.8, TS_para=1):
     """
@@ -212,6 +244,13 @@ def draw_curve_ap50(start_log_epoch, epoch, AP50_list, pic_name):
 if __name__ == "__main__":
 
     opt = opts().parse()
+    if opt.seed is not None:
+        # ---- seed initialization (FIRST thing after parse) ----
+        _init_seed_factory_and_derive(opt)
+        set_all_seeds(opt.seed)
+        # ---- Now opt.split_seed_b/opt.init_seed_a/opt.init_seed_b is available ----
+
+
     # assign_method: The label assign method. binary_assign, guassian_assign or auto_assign
     if opt.assign_method == "auto_assign":
         abbr_assign_method = "aa"
@@ -245,6 +284,9 @@ if __name__ == "__main__":
         Add_name = opt.cpl_mode + "_" + Add_name
     else:
         Add_name = Add_name
+
+    if opt.seed is not None:
+        Add_name=Add_name + "_seed_"  + str(opt.seed)
     
     
 
@@ -303,6 +345,8 @@ if __name__ == "__main__":
         config_txt_file.write("Data augmentation: " + str(opt.data_augmentation) + "\n")
         config_txt_file.write("Load pretrain model: " + str(opt.load_pretrain_model) + "\n")
         config_txt_file.write("Learn rate: " + str(opt.lr) + "\n")
+        if opt.seed is not None:
+            config_txt_file.write("Global seed: {} (split_B={}, init_A={}, init_B={})\n".format(opt.seed, opt.split_seed_b, opt.init_seed_a, opt.init_seed_b))
         config_txt_file.write("Learn mode: " + opt.learn_mode + "\n")
         if opt.learn_mode == "CPLBC":
             config_txt_file.write("The parameter of the Minimize Function: " + str(MF_para) + "\n")
@@ -320,48 +364,41 @@ if __name__ == "__main__":
     
     Cuda = True
     ##################shuffle train txt to two dataset ###########################
-    train_img_label_txt_file_raw = "./dataloader/img_label_" + num_to_english_c_dic[opt.input_img_num] + "_continuous_difficulty_train.txt"
-    train_annotation_path_a = "./variable_score/img_label_" + num_to_english_c_dic[opt.input_img_num] + "_continuous_difficulty_train_" + base_Add_name + "_subsetAllA.txt"
-    train_annotation_path_b = "./variable_score/img_label_" + num_to_english_c_dic[opt.input_img_num] + "_continuous_difficulty_train_" + base_Add_name + "_subsetAllB.txt"
-    if os.path.exists(train_annotation_path_a):
-        pass
+    if opt.seed is not None:
+        train_img_label_txt_file_raw = "./dataloader/img_label_" + num_to_english_c_dic[opt.input_img_num] + "_continuous_difficulty_train" + "_seed_" + str(opt.seed)+ ".txt"
+        train_annotation_path_a = "./variable_score/img_label_" + num_to_english_c_dic[opt.input_img_num] + "_continuous_difficulty_train" + "_seed_" + str(opt.seed) + "_subsetAllA.txt"
+        train_annotation_path_b = "./variable_score/img_label_" + num_to_english_c_dic[opt.input_img_num] + "_continuous_difficulty_train" + "_seed_" + str(opt.split_seed_b) + "_subsetAllB.txt"
     else:
-        os.makedirs("./variable_score/", exist_ok=True)
-        out = open(train_annotation_path_a, "w")
-        lines = []
-        with open(train_img_label_txt_file_raw, "r") as infile:
-            for line in infile:
-                lines.append(line)
-            random.shuffle(lines)
-            random.shuffle(lines)
-            random.shuffle(lines)
-            random.shuffle(lines)
-        for line in lines:
-            out.write(line)
-        out.close()
-    
-    if os.path.exists(train_annotation_path_b):
-        pass
-    else:
-        os.makedirs("./variable_score/", exist_ok=True)
-        out = open(train_annotation_path_b, "w")
-        lines = []
-        with open(train_img_label_txt_file_raw, "r") as infile:
-            for line in infile:
-                lines.append(line)
-            random.shuffle(lines)
-            random.shuffle(lines)
-            random.shuffle(lines)
-            random.shuffle(lines)
-        for line in lines:
-            out.write(line)
-        out.close()
+        train_img_label_txt_file_raw = "./dataloader/img_label_" + num_to_english_c_dic[opt.input_img_num] + "_continuous_difficulty_train.txt"
+        train_annotation_path_a = "./variable_score/img_label_" + num_to_english_c_dic[opt.input_img_num] + "_continuous_difficulty_train_" + base_Add_name + "_subsetAllA.txt"
+        train_annotation_path_b = "./variable_score/img_label_" + num_to_english_c_dic[opt.input_img_num] + "_continuous_difficulty_" + base_Add_name + "_train_subsetAllB.txt"
+
+    if opt.seed is not None:
+        # ----  A subset (fixed seed = opt.seed) ----
+        random.seed(opt.seed)
+    os.makedirs("./variable_score/", exist_ok=True)
+    _lines = open(train_img_label_txt_file_raw, "r").readlines()
+    random.shuffle(_lines)
+    with open(train_annotation_path_a, "w") as _f: _f.writelines(_lines)
+
+    if opt.seed is not None:
+        # ---- B subset (derived from global, MUST differ) ----
+        random.seed(opt.split_seed_b)
+    _lines = open(train_img_label_txt_file_raw, "r").readlines()
+    random.shuffle(_lines)
+    with open(train_annotation_path_b, "w") as _f: _f.writelines(_lines)
+
+    if opt.seed is not None:
+        random.seed(opt.seed)  # Restore the global.
     ##################shuffle train txt to two dataset ###########################
 
 
     train_dataset_image_path = opt.data_root_path + "images/train/"
     
-    val_annotation_path =  "./dataloader/img_label_" + num_to_english_c_dic[opt.input_img_num] + "_continuous_difficulty_val.txt"
+    if opt.seed is not None:
+        val_annotation_path = "./dataloader/img_label_" + num_to_english_c_dic[opt.input_img_num] + "_continuous_difficulty_val" + "_seed_" + str(opt.seed)+ ".txt"
+    else:
+        val_annotation_path = "./dataloader/img_label_" + num_to_english_c_dic[opt.input_img_num] + "_continuous_difficulty_val.txt"
     val_dataset_image_path = opt.data_root_path + "images/val/"
 
     #-------------------------------#
@@ -375,11 +412,26 @@ if __name__ == "__main__":
     ### FBODInferenceBody parameters:
     ### input_img_num=5, aggregation_output_channels=16, aggregation_method="multiinput", input_mode="GRG", ### Aggreagation parameters.
     ### backbone_name="cspdarknet53": ### Extract parameters. input_channels equal to aggregation_output_channels.
+
+    if opt.seed is not None:
+        _scratch = not (opt.load_pretrain_model or opt.start_Epoch != 0)
+        if _scratch:
+            torch.manual_seed(opt.init_seed_a)
+            torch.cuda.manual_seed_all(opt.init_seed_a)
+
     model_a = FBODInferenceBody(input_img_num=opt.input_img_num, aggregation_output_channels=opt.aggregation_output_channels,
                               aggregation_method=opt.aggregation_method, input_mode=opt.input_mode, backbone_name=opt.backbone_name, fusion_method=opt.fusion_method)
-    
+
+    if opt.seed is not None:
+        if _scratch:
+            torch.manual_seed(opt.init_seed_b)
+            torch.cuda.manual_seed_all(opt.init_seed_b)
     model_b = FBODInferenceBody(input_img_num=opt.input_img_num, aggregation_output_channels=opt.aggregation_output_channels,
                               aggregation_method=opt.aggregation_method, input_mode=opt.input_mode, backbone_name=opt.backbone_name, fusion_method=opt.fusion_method)
+    if opt.seed is not None:
+        if _scratch:
+            torch.manual_seed(opt.seed)
+            torch.cuda.manual_seed_all(opt.seed)
 
     #-------------------------------------------#
     #   load model
@@ -418,13 +470,11 @@ if __name__ == "__main__":
     net_a = model_a.train()
     if Cuda:
         net_a = torch.nn.DataParallel(net_a)
-        cudnn.benchmark = True
         net_a = net_a.cuda()
     
     net_b = model_b.train()
     if Cuda:
         net_b = torch.nn.DataParallel(net_b)
-        cudnn.benchmark = True
         net_b = net_b.cuda()
 
     # Creat loss function
@@ -471,17 +521,27 @@ if __name__ == "__main__":
     
     train_data_a = CustomDataset(train_lines_a, (model_input_size[1], model_input_size[0]), image_path=train_dataset_image_path, \
                                input_mode=opt.input_mode, continues_num=opt.input_img_num, data_augmentation=opt.data_augmentation)
-    train_dataloader_a = DataLoader(train_data_a, batch_size=Batch_size, shuffle=True, num_workers=4, pin_memory=True, collate_fn=dataset_collate)
+    
+    if opt.seed is not None:
+        g = torch.Generator(); g.manual_seed(opt.seed)
+        train_dataloader_a = DataLoader(train_data_a, batch_size=Batch_size, shuffle=True, num_workers=4, pin_memory=True, collate_fn=dataset_collate, worker_init_fn=worker_init_fn, generator=g)
+    else:
+        train_dataloader_a = DataLoader(train_data_a, batch_size=Batch_size, shuffle=True, num_workers=4, pin_memory=True, collate_fn=dataset_collate)
 
     train_data_b = CustomDataset(train_lines_b, (model_input_size[1], model_input_size[0]), image_path=train_dataset_image_path, \
                                input_mode=opt.input_mode, continues_num=opt.input_img_num, data_augmentation=opt.data_augmentation)
-    train_dataloader_b = DataLoader(train_data_b, batch_size=Batch_size, shuffle=True, num_workers=4, pin_memory=True, collate_fn=dataset_collate)
+    if opt.seed is not None:
+        train_dataloader_b = DataLoader(train_data_b, batch_size=Batch_size, shuffle=True, num_workers=4, pin_memory=True, collate_fn=dataset_collate, worker_init_fn=worker_init_fn, generator=g)
+    else:
+        train_dataloader_b = DataLoader(train_data_b, batch_size=Batch_size, shuffle=True, num_workers=4, pin_memory=True, collate_fn=dataset_collate)
     
 
     val_data = CustomDataset(val_lines, (model_input_size[1], model_input_size[0]), image_path=val_dataset_image_path, \
                              input_mode=opt.input_mode, continues_num=opt.input_img_num)
-    val_dataloader = DataLoader(val_data, batch_size=Batch_size, shuffle=True, num_workers=4, pin_memory=True, collate_fn=dataset_collate)
-
+    if opt.seed is not None:
+        val_dataloader = DataLoader(val_data, batch_size=Batch_size, shuffle=False, num_workers=4, pin_memory=True, collate_fn=dataset_collate, worker_init_fn=worker_init_fn, generator=g)
+    else:
+        val_dataloader = DataLoader(val_data, batch_size=Batch_size, shuffle=True, num_workers=4, pin_memory=True, collate_fn=dataset_collate)
 
     epoch_size = max(1, num_train_a//Batch_size)
     epoch_size_val = num_val//Batch_size
@@ -538,7 +598,10 @@ if __name__ == "__main__":
                 train_lines_b = f.readlines()
             train_data_b = CustomDataset(train_lines_b, (model_input_size[1], model_input_size[0]), image_path=train_dataset_image_path, \
                                     input_mode=opt.input_mode, continues_num=opt.input_img_num, data_augmentation=opt.data_augmentation)
-            train_dataloader_b = DataLoader(train_data_b, batch_size=Batch_size, shuffle=True, num_workers=4, pin_memory=True, collate_fn=dataset_collate)
+            if opt.seed is not None:
+                train_dataloader_b = DataLoader(train_data_b, batch_size=Batch_size, shuffle=True, num_workers=4, pin_memory=True, collate_fn=dataset_collate, worker_init_fn=worker_init_fn, generator=g)
+            else:
+                train_dataloader_b = DataLoader(train_data_b, batch_size=Batch_size, shuffle=True, num_workers=4, pin_memory=True, collate_fn=dataset_collate)
             ###########################################################################################
             ################ Use model B to update object score for model A ###########################
             net_b = net_b.eval()
@@ -578,7 +641,10 @@ if __name__ == "__main__":
                 train_lines_a = f.readlines()
             train_data_a = CustomDataset(train_lines_a, (model_input_size[1], model_input_size[0]), image_path=train_dataset_image_path, \
                                     input_mode=opt.input_mode, continues_num=opt.input_img_num, data_augmentation=opt.data_augmentation)
-            train_dataloader_a = DataLoader(train_data_a, batch_size=Batch_size, shuffle=True, num_workers=4, pin_memory=True, collate_fn=dataset_collate)
+            if opt.seed is not None:
+                train_dataloader_a = DataLoader(train_data_a, batch_size=Batch_size, shuffle=True, num_workers=4, pin_memory=True, collate_fn=dataset_collate, worker_init_fn=worker_init_fn, generator=g)
+            else:
+                train_dataloader_a = DataLoader(train_data_a, batch_size=Batch_size, shuffle=True, num_workers=4, pin_memory=True, collate_fn=dataset_collate)
             ###########################################################################################
         else:
             cpl_threshold=None

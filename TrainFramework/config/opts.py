@@ -42,10 +42,13 @@ class opts(object):
                                   Need to count the object scale, and divide to 3 sets, log the min max of each set.')
         
         ######### for train
+        self.parser.add_argument('--seed', type=int, default=None,
+                                 help='Global random seed. All sub-seeds derived from this.')
+
         self.parser.add_argument('--data_subset', default="subsetA", type=str,
                             help='learn_mode: subsetA, subsetB or subsetAll...')
         
-        self.parser.add_argument('--modelAorB', default="modelA", type=str,
+        self.parser.add_argument('--modelAorB', default=None, type=str,
                             help='modelAorB: modelA or modelB.')
         
         self.parser.add_argument('--Batch_size', default=8, type=int,

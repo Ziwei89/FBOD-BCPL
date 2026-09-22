@@ -66,6 +66,11 @@ if __name__ == "__main__":
         Add_name = opt.cpl_mode + "_" + Add_name
     else:
         Add_name = Add_name
+
+    if opt.seed is not None:
+        Add_name=Add_name + "_seed_"  + str(opt.seed)
+    if opt.modelAorB is not None:
+        Add_name = Add_name + "_" + opt.modelAorB
     
     model_name=opt.model_name
     
